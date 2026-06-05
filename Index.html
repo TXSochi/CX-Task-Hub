@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CX Task Hub — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── PARADISE 3.md TOKENS ─── */
+    :root {
+      --pdx-primary:       #2563EB;
+      --pdx-primary-light: #EFF6FF;
+      --pdx-primary-dark:  #1D4ED8;
+      --pdx-success:       #059669;
+      --pdx-success-light: #D1FAE5;
+      --pdx-warning:       #D97706;
+      --pdx-warning-light: #FEF3C7;
+      --pdx-danger:        #DC2626;
+      --pdx-danger-light:  #FEE2E2;
+      --pdx-info:          #0284C7;
+      --pdx-info-light:    #E0F2FE;
+      --pdx-grey-50:       #F8FAFC;
+      --pdx-grey-100:      #F1F5F9;
+      --pdx-grey-200:      #E2E8F0;
+      --pdx-grey-300:      #CBD5E1;
+      --pdx-grey-400:      #94A3B8;
+      --pdx-grey-500:      #64748B;
+      --pdx-grey-700:      #334155;
+      --pdx-grey-900:      #0F172A;
+      --pdx-font:          'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+      --pdx-font-xs:       10px;
+      --pdx-font-sm:       12px;
+      --pdx-font-md:       14px;
+      --pdx-font-lg:       16px;
+      --pdx-font-xl:       18px;
+      --pdx-space-1:       4px;
+      --pdx-space-2:       8px;
+      --pdx-space-3:       12px;
+      --pdx-space-4:       16px;
+      --pdx-space-5:       20px;
+      --pdx-space-6:       24px;
+      --pdx-radius-sm:     4px;
+      --pdx-radius-md:     8px;
+      --pdx-radius-lg:     12px;
+      --pdx-radius-xl:     16px;
+      --pdx-radius-full:   9999px;
+      --pdx-shadow-sm:     0 1px 3px rgba(0,0,0,0.08);
+      --pdx-shadow-md:     0 4px 12px rgba(0,0,0,0.10);
+      --pdx-shadow-lg:     0 8px 32px rgba(0,0,0,0.14);
+      --pdx-transition:    150ms ease;
+      --pdx-purple:        #7C3AED;
+      --pdx-purple-light:  #EDE9FE;
+      --header-h:          60px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: var(--pdx-font);
+      font-size: var(--pdx-font-md);
+      color: var(--pdx-grey-900);
+      background: var(--pdx-grey-100);
+      display: flex; flex-direction: column;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: var(--pdx-font); border: none; background: none; }
+
+    /* ════════════════════════════════════
+       LOGIN OVERLAY
+    ════════════════════════════════════ */
+    #loginOverlay {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(2px);
+      transition: opacity 0.5s ease;
+    }
+    #loginOverlay.is-hiding { opacity: 0; pointer-events: none; }
+
+    #appWrapper {
+      display: flex; flex-direction: column; height: 100%;
+      transition: filter 0.5s ease, transform 0.5s ease;
+    }
+    #appWrapper.is-blurred {
+      filter: blur(6px) brightness(0.85);
+      transform: scale(1.015);
+      pointer-events: none; user-select: none;
+    }
+
+    .login-card {
+      background: #fff; border-radius: var(--pdx-radius-xl);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+      padding: 40px 36px; width: 380px; max-width: 95vw;
+      animation: loginCardIn 0.35s cubic-bezier(.4,0,.2,1);
+      text-align: center;
+    }
+    @keyframes loginCardIn {
+      from { opacity:0; transform: translateY(20px) scale(0.96); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .login-card__logo {
+      width: 52px; height: 52px; border-radius: var(--pdx-radius-lg);
+      background: linear-gradient(135deg,#3378D6,#0045A3);
+      display: flex; align-items: center; justify-content: center;
+      color:#fff; font-size:22px; font-weight:900; margin: 0 auto 20px;
+    }
+    .login-card__title  { font-size:20px; font-weight:900; color:var(--pdx-grey-900); margin-bottom:4px; }
+    .login-card__sub    { font-size:var(--pdx-font-sm); color:var(--pdx-grey-400); margin-bottom:28px; }
+    .login-card__divider { height:1px; background:var(--pdx-grey-100); margin-bottom:18px; }
+    .login-card__org {
+      font-size:var(--pdx-font-xs); color:var(--pdx-grey-400);
+      display:flex; align-items:center; gap:6px; justify-content:center; margin-top:20px;
+    }
+    .ms-btn {
+      width:100%; height:42px; border-radius:var(--pdx-radius-md);
+      border:1px solid var(--pdx-grey-200); background:#fff;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      font-family:var(--pdx-font); font-size:var(--pdx-font-sm); font-weight:700;
+      color:var(--pdx-grey-700); cursor:pointer;
+      transition: all var(--pdx-transition); position:relative;
+    }
+    .ms-btn:hover { background:var(--pdx-grey-50); border-color:var(--pdx-grey-300); box-shadow:var(--pdx-shadow-sm); }
+    .ms-btn.is-loading { pointer-events:none; background:var(--pdx-grey-50); }
+    .spinner {
+      width:16px; height:16px; border:2px solid var(--pdx-grey-200);
+      border-top-color:var(--pdx-primary); border-radius:50%;
+      animation:spin 0.7s linear infinite; flex-shrink:0;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ════════════════════════════════════
+       HEADER
+    ════════════════════════════════════ */
+    .app-header {
+      height: var(--header-h);
+      background: #fff;
+      border-bottom: 1px solid var(--pdx-grey-200);
+      padding: 0 var(--pdx-space-5);
+      display: flex; align-items: center; gap: var(--pdx-space-4);
+      flex-shrink: 0; z-index: 50;
+    }
+    .brand { display:flex; align-items:center; gap:var(--pdx-space-2); margin-right:var(--pdx-space-3); flex-shrink:0; }
+    .brand__logo { width:28px; height:28px; border-radius:var(--pdx-radius-md); background:linear-gradient(135deg,#3378D6,#0045A3); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:900; }
+    .brand__name { font-size:var(--pdx-font-md); font-weight:900; color:var(--pdx-grey-900); white-space:nowrap; }
+
+    .header-search { flex:1; max-width:400px; position:relative; }
+    .header-search__icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--pdx-grey-400); pointer-events:none; }
+    .pdx-input {
+      width:100%; height:34px;
+      border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md);
+      padding:0 10px 0 32px; font-family:var(--pdx-font); font-size:var(--pdx-font-sm);
+      color:var(--pdx-grey-900); background:var(--pdx-grey-50); outline:none;
+      transition:all var(--pdx-transition);
+    }
+    .pdx-input::placeholder { color:var(--pdx-grey-400); }
+    .pdx-input:focus { border-color:var(--pdx-primary); background:#fff; box-shadow:0 0 0 3px rgba(37,99,235,0.10); }
+
+    .header-filters { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+    .pdx-filter-btn {
+      display:flex; align-items:center; gap:5px;
+      padding:0 10px; height:32px;
+      border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md);
+      background:#fff; font-size:var(--pdx-font-sm); color:var(--pdx-grey-500);
+      transition:all var(--pdx-transition); white-space:nowrap;
+    }
+    .pdx-filter-btn:hover { border-color:var(--pdx-grey-300); color:var(--pdx-grey-700); }
+    .pdx-filter-btn--active { border-color:var(--pdx-primary); color:var(--pdx-primary); background:var(--pdx-primary-light); }
+    .header-spacer { flex:1; }
+
+    .pdx-btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      font-family:var(--pdx-font); font-weight:700; border-radius:var(--pdx-radius-md);
+      cursor:pointer; border:none; transition:all var(--pdx-transition); white-space:nowrap;
+    }
+    .pdx-btn--primary { background:var(--pdx-primary); color:#fff; }
+    .pdx-btn--primary:hover { background:var(--pdx-primary-dark); }
+    .pdx-btn--secondary { background:#fff; color:var(--pdx-grey-700); border:1px solid var(--pdx-grey-200); }
+    .pdx-btn--secondary:hover { border-color:var(--pdx-grey-300); background:var(--pdx-grey-50); }
+    .pdx-btn--ghost { background:transparent; color:var(--pdx-grey-500); }
+    .pdx-btn--ghost:hover { background:var(--pdx-grey-100); color:var(--pdx-grey-700); }
+    .pdx-btn--link { background:transparent; color:var(--pdx-primary); padding:0; font-size:var(--pdx-font-sm); }
+    .pdx-btn--link:hover { text-decoration:underline; }
+    .pdx-btn--success { background:var(--pdx-success); color:#fff; }
+    .pdx-btn--success:hover { background:#047857; }
+    .pdx-btn--danger-ghost { background:transparent; color:var(--pdx-danger); }
+    .pdx-btn--danger-ghost:hover { background:var(--pdx-danger-light); }
+    .pdx-btn--sm { padding:0 10px; height:30px; font-size:var(--pdx-font-sm); }
+    .pdx-btn--md { padding:0 14px; height:34px; font-size:var(--pdx-font-sm); }
+    .pdx-btn--icon { width:28px; height:28px; padding:0; border-radius:var(--pdx-radius-md); }
+
+    .pdx-avatar { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .pdx-avatar--xs  { width:20px; height:20px; }
+    .pdx-avatar--sm  { width:26px; height:26px; }
+    .pdx-avatar--md  { width:32px; height:32px; }
+    .pdx-avatar--circle { border-radius:50%; }
+    .pdx-avatar__initials { display:flex; align-items:center; justify-content:center; width:100%; height:100%; border-radius:50%; color:#fff; font-weight:700; letter-spacing:0.03em; }
+
+    .header-user { display:flex; align-items:center; gap:var(--pdx-space-2); padding:4px 8px; border-radius:var(--pdx-radius-md); cursor:pointer; transition:background var(--pdx-transition); position:relative; }
+    .header-user:hover { background:var(--pdx-grey-50); }
+    .header-user__name { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-700); }
+    .pdx-menu { position:absolute; top:calc(100% + 6px); right:0; background:#fff; border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-lg); box-shadow:var(--pdx-shadow-md); min-width:150px; z-index:200; overflow:hidden; }
+    .pdx-menu__item { display:flex; align-items:center; gap:var(--pdx-space-2); padding:9px 12px; font-size:var(--pdx-font-sm); color:var(--pdx-grey-700); cursor:pointer; transition:background var(--pdx-transition); }
+    .pdx-menu__item:hover { background:var(--pdx-grey-50); }
+    .pdx-menu__divider { border:none; border-top:1px solid var(--pdx-grey-100); }
+    .notif-dot { position:absolute; top:5px; right:5px; width:7px; height:7px; background:var(--pdx-danger); border-radius:50%; border:1.5px solid #fff; }
+
+    /* ════════════════════════════════════
+       WORKSPACE
+    ════════════════════════════════════ */
+    .workspace { flex:1; display:flex; overflow:hidden; padding:14px 16px 16px; gap:12px; }
+
+    .panel {
+      background:#fff; border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-xl);
+      display:flex; flex-direction:column; overflow:hidden;
+      transition: width 0.3s cubic-bezier(.4,0,.2,1), min-width 0.3s cubic-bezier(.4,0,.2,1), flex 0.3s cubic-bezier(.4,0,.2,1);
+      position:relative;
+    }
+    .panel--main { flex:1; min-width:0; }
+    .panel--main.is-collapsed { flex:none; width:48px; min-width:48px; }
+    .panel--task { width:360px; min-width:360px; flex-shrink:0; }
+    .panel--task.is-expanded { flex:1; width:auto; min-width:0; }
+
+    .panel__header { height:50px; padding:0 var(--pdx-space-4); border-bottom:1px solid var(--pdx-grey-100); display:flex; align-items:center; gap:var(--pdx-space-3); flex-shrink:0; }
+    .panel__title { font-size:var(--pdx-font-md); font-weight:900; color:var(--pdx-grey-900); white-space:nowrap; flex-shrink:0; }
+    .panel__toggle { width:24px; height:24px; border-radius:var(--pdx-radius-md); display:flex; align-items:center; justify-content:center; color:var(--pdx-grey-400); background:var(--pdx-grey-50); border:1px solid var(--pdx-grey-200); cursor:pointer; transition:all var(--pdx-transition); flex-shrink:0; }
+    .panel__toggle:hover { background:var(--pdx-grey-100); color:var(--pdx-grey-700); border-color:var(--pdx-grey-300); }
+
+    .panel__body { flex:1; overflow-y:auto; overflow-x:hidden; padding:var(--pdx-space-4); }
+    .panel__body::-webkit-scrollbar { width:4px; }
+    .panel__body::-webkit-scrollbar-track { background:transparent; }
+    .panel__body::-webkit-scrollbar-thumb { background:var(--pdx-grey-200); border-radius:4px; }
+
+    .panel__rail { display:none; position:absolute; inset:0; align-items:center; justify-content:center; cursor:pointer; user-select:none; flex-direction:column; gap:10px; }
+    .panel__rail-text { writing-mode:vertical-rl; transform:rotate(180deg); font-size:var(--pdx-font-sm); font-weight:900; color:var(--pdx-grey-400); letter-spacing:0.1em; text-transform:uppercase; }
+    .panel__rail-icon { width:22px; height:22px; border-radius:var(--pdx-radius-sm); background:var(--pdx-grey-100); border:1px solid var(--pdx-grey-200); display:flex; align-items:center; justify-content:center; color:var(--pdx-grey-400); }
+    .is-collapsed .panel__header { display:none; }
+    .is-collapsed .panel__body   { display:none; }
+    .is-collapsed .panel__rail   { display:flex; }
+
+    /* ════════════════════════════════════
+       GREETING & KPI
+    ════════════════════════════════════ */
+    .greeting { display:flex; flex-direction:column; }
+    .greeting__title { font-size:15px; font-weight:900; color:var(--pdx-grey-900); letter-spacing:-0.2px; }
+    .greeting__sub   { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); margin-top:1px; }
+
+    .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--pdx-space-3); margin-bottom:var(--pdx-space-4); }
+    .kpi-card { background:var(--pdx-grey-50); border:1px solid var(--pdx-grey-100); border-radius:var(--pdx-radius-md); padding:10px 12px; cursor:default; transition:box-shadow var(--pdx-transition); }
+    .kpi-card:hover { box-shadow:var(--pdx-shadow-sm); }
+    .kpi-card__label { font-size:var(--pdx-font-xs); font-weight:700; color:var(--pdx-grey-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:5px; }
+    .kpi-card__value { font-size:22px; font-weight:900; color:var(--pdx-grey-900); line-height:1; letter-spacing:-0.4px; }
+    .kpi-card__delta { font-size:var(--pdx-font-xs); margin-top:4px; display:flex; align-items:center; gap:3px; }
+    .kpi-card__delta--up  { color:var(--pdx-success); }
+    .kpi-card__delta--down{ color:var(--pdx-danger); }
+    .kpi-card__delta--neu { color:var(--pdx-grey-400); }
+
+    /* ════════════════════════════════════
+       CHIPS / BADGES
+    ════════════════════════════════════ */
+    .pdx-chip { display:inline-flex; align-items:center; gap:4px; border-radius:var(--pdx-radius-full); font-weight:700; white-space:nowrap; }
+    .pdx-chip--sm { padding:2px 8px; font-size:var(--pdx-font-xs); }
+    .pdx-chip--md { padding:4px 10px; font-size:var(--pdx-font-sm); }
+    .pdx-chip--primary { background:var(--pdx-primary-light); color:var(--pdx-primary); }
+    .pdx-chip--success { background:var(--pdx-success-light); color:var(--pdx-success); }
+    .pdx-chip--warning { background:var(--pdx-warning-light); color:var(--pdx-warning); }
+    .pdx-chip--danger  { background:var(--pdx-danger-light);  color:var(--pdx-danger); }
+    .pdx-chip--info    { background:var(--pdx-info-light);    color:var(--pdx-info); }
+    .pdx-chip--purple  { background:var(--pdx-purple-light);  color:var(--pdx-purple); }
+    .pdx-chip--default { background:var(--pdx-grey-100);      color:var(--pdx-grey-500); }
+
+    .pdx-indicator { display:inline-flex; align-items:center; gap:4px; }
+    .pdx-indicator__dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .pdx-indicator--online  .pdx-indicator__dot { background:var(--pdx-success); }
+    .pdx-indicator--pending .pdx-indicator__dot { background:var(--pdx-info); }
+    .pdx-indicator--busy    .pdx-indicator__dot { background:var(--pdx-danger); }
+
+    /* ════════════════════════════════════
+       TABS
+    ════════════════════════════════════ */
+    .pdx-tabs { display:flex; border-bottom:2px solid var(--pdx-grey-200); margin-bottom:var(--pdx-space-4); overflow-x:auto; flex-wrap:nowrap; }
+    .pdx-tabs::-webkit-scrollbar { display:none; }
+    .pdx-tab { padding:7px 12px; font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-500); border:none; background:none; cursor:pointer; position:relative; transition:color var(--pdx-transition); white-space:nowrap; }
+    .pdx-tab:hover { color:var(--pdx-grey-700); }
+    .pdx-tab--active { color:var(--pdx-primary); }
+    .pdx-tab--active::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:2px; background:var(--pdx-primary); border-radius:1px; }
+    .pdx-tab__badge { display:inline-flex; align-items:center; justify-content:center; background:var(--pdx-grey-100); color:var(--pdx-grey-500); font-size:9px; font-weight:700; padding:1px 5px; border-radius:var(--pdx-radius-full); margin-left:4px; }
+    .pdx-tab--active .pdx-tab__badge { background:var(--pdx-primary-light); color:var(--pdx-primary); }
+
+    /* ════════════════════════════════════
+       REQUEST CARDS
+    ════════════════════════════════════ */
+    .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--pdx-space-3); }
+    .sec-header__title { font-size:var(--pdx-font-md); font-weight:900; color:var(--pdx-grey-900); }
+
+    .req-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:var(--pdx-space-3); }
+
+    .req-card { border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md); padding:12px var(--pdx-space-4); background:#fff; display:flex; flex-direction:column; gap:var(--pdx-space-2); transition:box-shadow var(--pdx-transition),transform var(--pdx-transition),border-color var(--pdx-transition); cursor:pointer; position:relative; overflow:hidden; }
+    .req-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+    .req-card--blue::before   { background:var(--pdx-primary); }
+    .req-card--purple::before { background:var(--pdx-purple); }
+    .req-card--yellow::before { background:var(--pdx-warning); }
+    .req-card--green::before  { background:var(--pdx-success); }
+    .req-card--grey::before   { background:var(--pdx-grey-400); }
+    .req-card--teal::before   { background:var(--pdx-info); }
+    .req-card:hover { box-shadow:var(--pdx-shadow-md); transform:translateY(-1px); border-color:var(--pdx-grey-300); }
+    .req-card__top   { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+    .req-card__title { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-900); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .req-card__desc  { font-size:var(--pdx-font-xs); color:var(--pdx-grey-500); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .req-card__footer { display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px solid var(--pdx-grey-100); margin-top:2px; }
+    .req-card__meta  { display:flex; align-items:center; gap:8px; }
+    .req-card__requester { display:flex; align-items:center; gap:4px; font-size:var(--pdx-font-xs); color:var(--pdx-grey-500); }
+    .req-card__date  { display:flex; align-items:center; gap:3px; font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); }
+
+    @keyframes cardIn {
+      from { opacity:0; transform:translateY(-12px) scale(0.97); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .req-card--new { animation:cardIn 0.3s cubic-bezier(.4,0,.2,1); }
+
+    /* ════════════════════════════════════
+       MY TASK PANEL ITEMS
+    ════════════════════════════════════ */
+    .task-sec-label { font-size:var(--pdx-font-xs); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--pdx-grey-400); margin:12px 0 6px; display:flex; align-items:center; gap:6px; }
+    .task-sec-label:first-child { margin-top:0; }
+    .task-list { display:flex; flex-direction:column; gap:var(--pdx-space-2); }
+
+    .task-item { border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md); padding:10px 12px; background:#fff; cursor:pointer; transition:all var(--pdx-transition); position:relative; overflow:hidden; display:flex; flex-direction:column; gap:5px; }
+    .task-item::before { content:''; position:absolute; top:0; left:0; width:3px; bottom:0; }
+    .task-item--blue::before   { background:var(--pdx-primary); }
+    .task-item--purple::before { background:var(--pdx-purple); }
+    .task-item--green::before  { background:var(--pdx-success); }
+    .task-item--yellow::before { background:var(--pdx-warning); }
+    .task-item--red::before    { background:var(--pdx-danger); }
+    .task-item--grey::before   { background:var(--pdx-grey-300); }
+    .task-item:hover { box-shadow:var(--pdx-shadow-sm); border-color:var(--pdx-grey-300); }
+    .task-item__title { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-900); line-height:1.35; padding-left:5px; }
+    .task-item__row   { display:flex; align-items:center; justify-content:space-between; padding-left:5px; }
+    .task-item__from  { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); display:flex; align-items:center; gap:4px; }
+    .task-item__date  { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); display:flex; align-items:center; gap:3px; }
+    .task-item__attach { display:flex; align-items:center; gap:3px; font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); padding-left:5px; margin-top:1px; }
+
+    .panel--task.is-expanded .task-list { display:grid; grid-template-columns:repeat(2,1fr); }
+
+    @keyframes taskIn {
+      from { opacity:0; transform:translateX(12px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    .task-item--new { animation:taskIn 0.3s cubic-bezier(.4,0,.2,1); }
+
+    /* ════════════════════════════════════
+       PAGINATION
+    ════════════════════════════════════ */
+    .pagination { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+    .pagination__info { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); }
+    .pagination__btns { display:flex; gap:3px; }
+    .page-btn { width:26px; height:26px; border-radius:var(--pdx-radius-sm); display:flex; align-items:center; justify-content:center; font-size:var(--pdx-font-xs); font-weight:700; cursor:pointer; border:1px solid var(--pdx-grey-200); background:#fff; color:var(--pdx-grey-500); transition:all var(--pdx-transition); }
+    .page-btn:hover { border-color:var(--pdx-grey-300); color:var(--pdx-grey-700); }
+    .page-btn--active { background:var(--pdx-primary); color:#fff; border-color:var(--pdx-primary); }
+
+    /* ════════════════════════════════════
+       MODALS (shared)
+    ════════════════════════════════════ */
+    .pdx-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; z-index:400; opacity:0; pointer-events:none; transition:opacity 0.15s; }
+    .pdx-modal-overlay--open { opacity:1; pointer-events:all; }
+    .pdx-modal { background:#fff; border-radius:var(--pdx-radius-xl); box-shadow:var(--pdx-shadow-lg); width:500px; max-width:95vw; max-height:90vh; overflow-y:auto; transform:translateY(10px) scale(0.98); transition:transform 0.15s; }
+    .pdx-modal-overlay--open .pdx-modal { transform:translateY(0) scale(1); }
+    .pdx-modal__header { display:flex; align-items:center; justify-content:space-between; padding:18px var(--pdx-space-5); border-bottom:1px solid var(--pdx-grey-100); }
+    .pdx-modal__title { font-size:var(--pdx-font-xl); font-weight:900; color:var(--pdx-grey-900); }
+    .pdx-modal__close { width:28px; height:28px; border-radius:var(--pdx-radius-md); display:flex; align-items:center; justify-content:center; color:var(--pdx-grey-400); transition:all var(--pdx-transition); }
+    .pdx-modal__close:hover { background:var(--pdx-grey-100); color:var(--pdx-grey-700); }
+    .pdx-modal__body { padding:var(--pdx-space-5); }
+    .pdx-modal__footer { display:flex; align-items:center; justify-content:flex-end; gap:var(--pdx-space-3); padding:var(--pdx-space-4) var(--pdx-space-5); border-top:1px solid var(--pdx-grey-100); }
+
+    .pdx-form-group { margin-bottom:var(--pdx-space-4); }
+    .pdx-form-group__label { display:block; font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-700); margin-bottom:5px; }
+    .pdx-form-group__required { color:var(--pdx-danger); }
+    .pdx-input--full { width:100%; padding-left:10px; }
+    .pdx-input--tall { height:72px; resize:vertical; padding:8px 10px; font-size:var(--pdx-font-sm); }
+    .pdx-select { width:100%; height:34px; padding:0 10px; border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md); font-family:var(--pdx-font); font-size:var(--pdx-font-sm); color:var(--pdx-grey-700); background:#fff; outline:none; cursor:pointer; }
+    .pdx-select:focus { border-color:var(--pdx-primary); box-shadow:0 0 0 3px rgba(37,99,235,0.10); }
+
+    /* ════════════════════════════════════
+       ATTACHMENT DROPZONE
+    ════════════════════════════════════ */
+    .attach-zone {
+      border:2px dashed var(--pdx-grey-200); border-radius:var(--pdx-radius-md);
+      padding:18px 14px; text-align:center; cursor:pointer;
+      transition:all 0.2s ease; background:var(--pdx-grey-50);
+      position:relative;
+    }
+    .attach-zone:hover, .attach-zone.drag-over {
+      border-color:var(--pdx-primary); background:var(--pdx-primary-light);
+    }
+    .attach-zone__icon { color:var(--pdx-grey-300); margin-bottom:7px; display:flex; justify-content:center; }
+    .attach-zone:hover .attach-zone__icon, .attach-zone.drag-over .attach-zone__icon { color:var(--pdx-primary); }
+    .attach-zone__label { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-500); }
+    .attach-zone:hover .attach-zone__label, .attach-zone.drag-over .attach-zone__label { color:var(--pdx-primary); }
+    .attach-zone__sub { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); margin-top:3px; }
+    .attach-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+
+    .attach-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+
+    @keyframes fileIn {
+      from { opacity:0; transform:translateY(-6px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .attach-file {
+      display:flex; align-items:center; gap:8px;
+      background:#fff; border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md);
+      padding:8px 10px;
+      animation:fileIn 0.2s ease;
+    }
+    .attach-file__icon {
+      width:28px; height:28px; border-radius:var(--pdx-radius-sm);
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; font-weight:700; flex-shrink:0;
+    }
+    .attach-file__icon--pdf   { background:#FEE2E2; color:var(--pdx-danger); }
+    .attach-file__icon--img   { background:#E0F2FE; color:var(--pdx-info); }
+    .attach-file__icon--doc   { background:var(--pdx-primary-light); color:var(--pdx-primary); }
+    .attach-file__icon--xls   { background:var(--pdx-success-light); color:var(--pdx-success); }
+    .attach-file__icon--fig   { background:var(--pdx-purple-light); color:var(--pdx-purple); }
+    .attach-file__icon--other { background:var(--pdx-grey-100); color:var(--pdx-grey-500); }
+    .attach-file__info { flex:1; min-width:0; }
+    .attach-file__name { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-700); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .attach-file__size { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); margin-top:1px; }
+    .attach-file__remove { width:22px; height:22px; border-radius:var(--pdx-radius-sm); display:flex; align-items:center; justify-content:center; color:var(--pdx-grey-400); flex-shrink:0; transition:all var(--pdx-transition); }
+    .attach-file__remove:hover { background:var(--pdx-danger-light); color:var(--pdx-danger); }
+
+    /* ════════════════════════════════════
+       DETAIL DRAWER
+    ════════════════════════════════════ */
+    .detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.20); z-index:300; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+    .detail-overlay--open { opacity:1; pointer-events:all; }
+    .detail-drawer { position:fixed; top:0; right:0; bottom:0; width:520px; max-width:95vw; background:#fff; box-shadow:var(--pdx-shadow-lg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1); z-index:350; }
+    .detail-overlay--open .detail-drawer { transform:translateX(0); }
+    .detail-drawer__header { padding:var(--pdx-space-5); border-bottom:1px solid var(--pdx-grey-100); display:flex; align-items:flex-start; gap:var(--pdx-space-3); flex-shrink:0; }
+    .detail-drawer__close { width:28px; height:28px; border-radius:var(--pdx-radius-md); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--pdx-grey-400); transition:all var(--pdx-transition); }
+    .detail-drawer__close:hover { background:var(--pdx-grey-100); color:var(--pdx-grey-700); }
+    .detail-drawer__body { flex:1; overflow-y:auto; padding:var(--pdx-space-5); }
+    .detail-drawer__body::-webkit-scrollbar { width:4px; }
+    .detail-drawer__body::-webkit-scrollbar-thumb { background:var(--pdx-grey-200); border-radius:4px; }
+    .detail-drawer__footer { padding:var(--pdx-space-4) var(--pdx-space-5); border-top:1px solid var(--pdx-grey-100); display:flex; align-items:center; gap:var(--pdx-space-3); flex-shrink:0; }
+    .detail-title { font-size:18px; font-weight:900; color:var(--pdx-grey-900); line-height:1.3; flex:1; }
+    .detail-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:var(--pdx-space-5); }
+    .detail-meta-item__label { font-size:var(--pdx-font-xs); font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--pdx-grey-400); margin-bottom:4px; }
+    .detail-meta-item__value { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-700); display:flex; align-items:center; gap:6px; }
+    .detail-section-title { font-size:var(--pdx-font-sm); font-weight:900; color:var(--pdx-grey-700); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.06em; }
+    .detail-description { font-size:var(--pdx-font-sm); color:var(--pdx-grey-500); line-height:1.7; background:var(--pdx-grey-50); border-radius:var(--pdx-radius-md); padding:14px; border:1px solid var(--pdx-grey-100); }
+    .detail-divider { border:none; border-top:1px solid var(--pdx-grey-100); margin:var(--pdx-space-5) 0; }
+    .comment-list { display:flex; flex-direction:column; gap:12px; }
+    .comment-item { display:flex; gap:10px; }
+    .comment-body { flex:1; background:var(--pdx-grey-50); border-radius:var(--pdx-radius-md); padding:10px 12px; border:1px solid var(--pdx-grey-100); }
+    .comment-author { font-size:var(--pdx-font-xs); font-weight:700; color:var(--pdx-grey-700); }
+    .comment-text   { font-size:var(--pdx-font-sm); color:var(--pdx-grey-500); margin-top:2px; line-height:1.5; }
+    .comment-time   { font-size:var(--pdx-font-xs); color:var(--pdx-grey-400); margin-top:4px; }
+    .comment-input-row { display:flex; gap:10px; align-items:flex-start; margin-top:12px; }
+    .comment-input-row textarea { flex:1; height:60px; resize:none; padding:8px 10px; border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-md); font-family:var(--pdx-font); font-size:var(--pdx-font-sm); color:var(--pdx-grey-900); background:#fff; outline:none; transition:all var(--pdx-transition); }
+    .comment-input-row textarea:focus { border-color:var(--pdx-primary); box-shadow:0 0 0 3px rgba(37,99,235,0.10); }
+    .comment-input-row textarea::placeholder { color:var(--pdx-grey-400); }
+    .status-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:var(--pdx-radius-full); font-size:var(--pdx-font-xs); font-weight:700; }
+    .status-badge--new        { background:var(--pdx-primary-light); color:var(--pdx-primary); }
+    .status-badge--inprogress { background:var(--pdx-info-light);    color:var(--pdx-info); }
+    .status-badge--review     { background:var(--pdx-warning-light); color:var(--pdx-warning); }
+    .status-badge--done       { background:var(--pdx-success-light); color:var(--pdx-success); }
+
+    /* ════════════════════════════════════
+       TOAST STACK
+    ════════════════════════════════════ */
+    #toastStack { position:fixed; bottom:20px; right:20px; z-index:600; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .pdx-toast {
+      display:flex; align-items:flex-start; gap:10px;
+      background:#fff; border:1px solid var(--pdx-grey-200); border-radius:var(--pdx-radius-lg);
+      padding:12px 14px; box-shadow:var(--pdx-shadow-lg); min-width:270px; max-width:320px;
+      pointer-events:all;
+      animation:toastIn 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes toastIn {
+      from { opacity:0; transform:translateX(30px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    .pdx-toast--success { border-left:4px solid var(--pdx-success); }
+    .pdx-toast--danger  { border-left:4px solid var(--pdx-danger); }
+    .pdx-toast--info    { border-left:4px solid var(--pdx-info); }
+    .pdx-toast__body { flex:1; }
+    .pdx-toast__title { font-size:var(--pdx-font-sm); font-weight:700; color:var(--pdx-grey-900); }
+    .pdx-toast__msg   { font-size:var(--pdx-font-xs); color:var(--pdx-grey-500); margin-top:2px; }
+    .pdx-toast__close { color:var(--pdx-grey-400); font-size:16px; cursor:pointer; background:none; border:none; line-height:1; }
+    .pdx-toast__close:hover { color:var(--pdx-grey-700); }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOGIN OVERLAY ── -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <div class="login-card__logo">P</div>
+      <div class="login-card__title">CX Task Hub</div>
+      <div class="login-card__sub">Sign in to manage your CX design requests</div>
+      <div class="login-card__divider"></div>
+      <button class="ms-btn" id="msBtn" onclick="handleLogin()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="0"  y="0"  width="8" height="8" fill="#F25022"/>
+          <rect x="10" y="0"  width="8" height="8" fill="#7FBA00"/>
+          <rect x="0"  y="10" width="8" height="8" fill="#00A4EF"/>
+          <rect x="10" y="10" width="8" height="8" fill="#FFB900"/>
+        </svg>
+        <span id="msBtnText">Sign in with Microsoft</span>
+      </button>
+      <div class="login-card__org">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="5.5" cy="5.5" r="4.5"/><path d="M5.5 3.5v2.5l1.5 1"/></svg>
+        Paragon Corp · Single Sign-On
+      </div>
+    </div>
+  </div>
+
+  <!-- ── APP WRAPPER (blurred behind login) ── -->
+  <div id="appWrapper" class="is-blurred">
+
+  <!-- ════════════════════════════════════
+       HEADER
+  ════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand__logo">P</div>
+      <span class="brand__name">CX Task Hub</span>
+    </div>
+    <div class="header-search">
+      <span class="header-search__icon">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5.5" cy="5.5" r="4"/><path d="M11 11l-2.2-2.2"/></svg>
+      </span>
+      <input class="pdx-input" type="text" placeholder="Search requests, requester, or category..." />
+    </div>
+    <div class="header-filters">
+      <button class="pdx-filter-btn" onclick="this.classList.toggle('pdx-filter-btn--active')">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="4.5" cy="4.5" r="3"/><path d="M2.5 4.5h4M4.5 2.5v4"/></svg>
+        Team ▾
+      </button>
+      <button class="pdx-filter-btn" onclick="this.classList.toggle('pdx-filter-btn--active')">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="1" width="8" height="8" rx="1.5"/><path d="M3 4h4M3 6h2.5"/></svg>
+        Category ▾
+      </button>
+      <button class="pdx-filter-btn" onclick="this.classList.toggle('pdx-filter-btn--active')">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="1.5" width="8" height="7.5" rx="1.5"/><path d="M6.5 0.5v2M3.5 0.5v2M1 4h8"/></svg>
+        Deadline ▾
+      </button>
+    </div>
+    <div class="header-spacer"></div>
+    <button class="pdx-btn pdx-btn--primary pdx-btn--md" onclick="openNewRequest()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 1v10M1 6h10"/></svg>
+      New Request
+    </button>
+    <button class="pdx-btn pdx-btn--ghost pdx-btn--md" style="width:32px;padding:0;position:relative;" aria-label="Notifications">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1.5a4 4 0 0 1 4 4v2.5l1 1.5H3.5l1-1.5V5.5a4 4 0 0 1 4-4z"/><path d="M6 12.5a1.5 1.5 0 0 0 3 0"/></svg>
+      <span class="notif-dot"></span>
+    </button>
+    <div class="header-user" onclick="toggleUserMenu(this)">
+      <span class="pdx-avatar pdx-avatar--sm pdx-avatar--circle">
+        <span class="pdx-avatar__initials" style="background:var(--pdx-primary);font-size:8px;">OM</span>
+      </span>
+      <span class="header-user__name">Odi</span>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--pdx-grey-400)" stroke-width="1.8" stroke-linecap="round"><path d="M2 3.5l3 3 3-3"/></svg>
+      <ul class="pdx-menu" id="userMenu" style="display:none;" role="menu">
+        <li class="pdx-menu__item">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="4" r="2.2"/><path d="M2 10.5c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>
+          Profile
+        </li>
+        <li class="pdx-menu__item">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="6" r="1.8"/><path d="M6 1.5v1M6 9.5v1M1.5 6h1M9.5 6h1"/></svg>
+          Settings
+        </li>
+        <hr class="pdx-menu__divider"/>
+        <li class="pdx-menu__item" style="color:var(--pdx-danger);">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 2H2.5A1.5 1.5 0 0 0 1 3.5v5A1.5 1.5 0 0 0 2.5 10H4M8 8.5l3-2.5-3-2.5M11 6H4.5"/></svg>
+          Sign out
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════
+       WORKSPACE
+  ════════════════════════════════════ -->
+  <div class="workspace">
+
+    <!-- ── MAIN BOARD ── -->
+    <div class="panel panel--main" id="panelMain">
+      <div class="panel__rail" onclick="expandMain()" title="Expand Main Board">
+        <div class="panel__rail-icon">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 2l4 3-4 3"/></svg>
+        </div>
+        <span class="panel__rail-text">Main Board</span>
+      </div>
+      <div class="panel__header">
+        <div class="greeting">
+          <div class="greeting__title">Hi Odi 👋</div>
+          <div class="greeting__sub">Ready to create better experiences today?</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;margin-right:8px;">
+          <span class="pdx-chip pdx-chip--default pdx-chip--sm" id="kpiTotal">6 Total</span>
+          <span class="pdx-chip pdx-chip--info pdx-chip--sm" id="kpiInprog">2 In Progress</span>
+          <span class="pdx-chip pdx-chip--success pdx-chip--sm" id="kpiDone">0 Done</span>
+          <span class="pdx-chip pdx-chip--warning pdx-chip--sm" id="kpiNew">4 New</span>
+        </div>
+        <button class="panel__toggle" onclick="collapseMain()" title="Collapse Main Board">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7.5 2l-4 4 4 4"/></svg>
+        </button>
+      </div>
+      <div class="panel__body">
+        <div class="kpi-strip">
+          <div class="kpi-card">
+            <div class="kpi-card__label">Total Requests</div>
+            <div class="kpi-card__value" id="kpiCardTotal">6</div>
+            <div class="kpi-card__delta kpi-card__delta--up">↑ 12% vs last month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__label">In Progress</div>
+            <div class="kpi-card__value" id="kpiCardInprog" style="color:var(--pdx-info);">2</div>
+            <div class="kpi-card__delta kpi-card__delta--neu">→ No change</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__label">Completed</div>
+            <div class="kpi-card__value" id="kpiCardDone" style="color:var(--pdx-success);">0</div>
+            <div class="kpi-card__delta kpi-card__delta--up">↑ 8% vs last month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__label">New Requests</div>
+            <div class="kpi-card__value" id="kpiCardNew" style="color:var(--pdx-warning);">4</div>
+            <div class="kpi-card__delta kpi-card__delta--down">↑ 2 more than last week</div>
+          </div>
+        </div>
+
+        <div class="pdx-tabs" role="tablist" id="reqTabs">
+          <button class="pdx-tab pdx-tab--active" data-tab="all" role="tab" aria-selected="true" onclick="switchTab(this,'all')">All <span class="pdx-tab__badge" id="tabAll">6</span></button>
+          <button class="pdx-tab" data-tab="new" role="tab" aria-selected="false" onclick="switchTab(this,'new')">New <span class="pdx-tab__badge" id="tabNew">4</span></button>
+          <button class="pdx-tab" data-tab="inprogress" role="tab" aria-selected="false" onclick="switchTab(this,'inprogress')">In Progress <span class="pdx-tab__badge" id="tabInprog">2</span></button>
+          <button class="pdx-tab" data-tab="done" role="tab" aria-selected="false" onclick="switchTab(this,'done')">Completed <span class="pdx-tab__badge" id="tabDone">0</span></button>
+        </div>
+
+        <div class="sec-header">
+          <span class="sec-header__title" id="reqSectionTitle">All Requests</span>
+          <button class="pdx-btn pdx-btn--secondary pdx-btn--sm">Sort ▾</button>
+        </div>
+
+        <div class="req-grid" id="reqGrid"></div>
+
+        <div class="pagination">
+          <span class="pagination__info" id="pageInfo">Showing 6 of 6 requests</span>
+          <div class="pagination__btns">
+            <button class="page-btn">‹</button>
+            <button class="page-btn page-btn--active">1</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY TASK ── -->
+    <div class="panel panel--task" id="panelTask">
+      <div class="panel__rail" onclick="expandTask()" title="Expand My Task">
+        <div class="panel__rail-icon">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L2 5l4 3"/></svg>
+        </div>
+        <span class="panel__rail-text">My Task</span>
+      </div>
+      <div class="panel__header">
+        <button class="panel__toggle" id="taskToggleBtn" onclick="toggleTask()" title="Expand My Task">
+          <svg id="taskToggleIcon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 2l4 4-4 4"/></svg>
+        </button>
+        <div class="panel__title">My Task</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+          <span class="pdx-chip pdx-chip--danger pdx-chip--sm" id="urgentBadge">2 urgent</span>
+          <button class="pdx-btn pdx-btn--primary pdx-btn--sm" onclick="openNewTask()">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 1v8M1 5h8"/></svg>
+            Add Task
+          </button>
+        </div>
+      </div>
+      <div class="panel__body" id="taskBody">
+        <p class="task-sec-label">
+          <span class="pdx-indicator pdx-indicator--busy"><span class="pdx-indicator__dot"></span></span>
+          <span id="labelUrgent">Needs Action · 2</span>
+        </p>
+        <div class="task-list" id="taskListUrgent"></div>
+
+        <p class="task-sec-label" style="margin-top:14px;">
+          <span class="pdx-indicator pdx-indicator--pending"><span class="pdx-indicator__dot"></span></span>
+          <span id="labelInprog">In Progress · 3</span>
+        </p>
+        <div class="task-list" id="taskListInprog"></div>
+
+        <p class="task-sec-label" style="margin-top:14px;">
+          <span class="pdx-indicator pdx-indicator--online"><span class="pdx-indicator__dot"></span></span>
+          <span id="labelDone">Done Recently · 2</span>
+        </p>
+        <div class="task-list" id="taskListDone"></div>
+      </div>
+    </div>
+
+  </div><!-- /workspace -->
+
+  <!-- ════════════════════════════════════
+       NEW REQUEST MODAL
+  ════════════════════════════════════ -->
+  <div class="pdx-modal-overlay" id="newReqModal" onclick="if(event.target===this)closeNewRequest()" role="dialog" aria-modal="true">
+    <div class="pdx-modal">
+      <div class="pdx-modal__header">
+        <h2 class="pdx-modal__title">New Request</h2>
+        <button class="pdx-modal__close pdx-btn pdx-btn--ghost" onclick="closeNewRequest()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+        </button>
+      </div>
+      <div class="pdx-modal__body">
+        <div class="pdx-form-group">
+          <label class="pdx-form-group__label">Request title <span class="pdx-form-group__required">*</span></label>
+          <input class="pdx-input pdx-input--full" id="reqTitle" type="text" placeholder="Describe your request in one line..." />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="pdx-form-group">
+            <label class="pdx-form-group__label">Category <span class="pdx-form-group__required">*</span></label>
+            <select class="pdx-select" id="reqCategory">
+              <option value="" disabled selected>Select category</option>
+              <option>UI Design</option><option>Visual Design</option>
+              <option>UX Research</option><option>Copywriting</option>
+              <option>Documentation</option><option>Design System</option>
+            </select>
+          </div>
+          <div class="pdx-form-group">
+            <label class="pdx-form-group__label">Team destination</label>
+            <select class="pdx-select" id="reqTeam">
+              <option value="" disabled selected>Select team</option>
+              <option>UI/UX Team</option><option>Research Team</option>
+              <option>CX Writing</option><option>Design System</option><option>Design Ops</option>
+            </select>
+          </div>
+        </div>
+        <div class="pdx-form-group">
+          <label class="pdx-form-group__label">Deadline</label>
+          <input class="pdx-input pdx-input--full" id="reqDeadline" type="date" style="padding-left:10px;" />
+        </div>
+        <div class="pdx-form-group" style="margin-bottom:0;">
+          <label class="pdx-form-group__label">Description</label>
+          <textarea class="pdx-input pdx-input--full pdx-input--tall" id="reqDesc" placeholder="Provide context, goals, and any references..."></textarea>
+        </div>
+      </div>
+      <div class="pdx-modal__footer">
+        <button class="pdx-btn pdx-btn--secondary pdx-btn--md" onclick="closeNewRequest()">Cancel</button>
+        <button class="pdx-btn pdx-btn--primary pdx-btn--md" onclick="submitRequest()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       ADD TASK MODAL
+  ════════════════════════════════════ -->
+  <div class="pdx-modal-overlay" id="newTaskModal" onclick="if(event.target===this)closeNewTask()" role="dialog" aria-modal="true">
+    <div class="pdx-modal">
+      <div class="pdx-modal__header">
+        <h2 class="pdx-modal__title">Add Task</h2>
+        <button class="pdx-modal__close pdx-btn pdx-btn--ghost" onclick="closeNewTask()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+        </button>
+      </div>
+      <div class="pdx-modal__body">
+        <div class="pdx-form-group">
+          <label class="pdx-form-group__label">Task title <span class="pdx-form-group__required">*</span></label>
+          <input class="pdx-input pdx-input--full" id="taskTitle" type="text" placeholder="What needs to be done..." />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="pdx-form-group">
+            <label class="pdx-form-group__label">Category <span class="pdx-form-group__required">*</span></label>
+            <select class="pdx-select" id="taskCategory">
+              <option value="" disabled selected>Select category</option>
+              <option>UI Design</option><option>Visual Design</option>
+              <option>UX Research</option><option>Copywriting</option>
+              <option>Documentation</option><option>Design System</option>
+            </select>
+          </div>
+          <div class="pdx-form-group">
+            <label class="pdx-form-group__label">Due date</label>
+            <input class="pdx-input pdx-input--full" id="taskDeadline" type="date" style="padding-left:10px;" />
+          </div>
+        </div>
+        <div class="pdx-form-group">
+          <label class="pdx-form-group__label">From (requester)</label>
+          <input class="pdx-input pdx-input--full" id="taskFrom" type="text" placeholder="e.g. Ari R." style="padding-left:10px;" />
+        </div>
+        <div class="pdx-form-group">
+          <label class="pdx-form-group__label">Notes</label>
+          <textarea class="pdx-input pdx-input--full pdx-input--tall" id="taskNotes" placeholder="Any context or links..."></textarea>
+        </div>
+
+        <!-- ATTACHMENT SECTION -->
+        <div class="pdx-form-group" style="margin-bottom:0;">
+          <label class="pdx-form-group__label">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="margin-right:4px;vertical-align:middle;"><path d="M10.5 5.5L5.5 10.5a3 3 0 0 1-4.24-4.24L6.76 1.26a2 2 0 0 1 2.83 2.83L4.09 9.59a1 1 0 0 1-1.41-1.41L8.09 2.76"/></svg>
+            Attachments
+          </label>
+
+          <div class="attach-zone" id="attachZone"
+               ondragover="handleDragOver(event)"
+               ondragleave="handleDragLeave(event)"
+               ondrop="handleDrop(event)">
+            <input type="file" multiple id="attachInput" onchange="handleFileSelect(event)" />
+            <div class="attach-zone__icon">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="4" width="20" height="20" rx="3"/><path d="M9 14h10M14 9v10"/></svg>
+            </div>
+            <div class="attach-zone__label">Drag & drop files or click to browse</div>
+            <div class="attach-zone__sub">PDF, images, Figma, docs — up to 10 MB each</div>
+          </div>
+
+          <div class="attach-list" id="attachList"></div>
+        </div>
+      </div>
+      <div class="pdx-modal__footer">
+        <div style="flex:1;font-size:var(--pdx-font-xs);color:var(--pdx-grey-400);" id="attachCount"></div>
+        <button class="pdx-btn pdx-btn--secondary pdx-btn--md" onclick="closeNewTask()">Cancel</button>
+        <button class="pdx-btn pdx-btn--primary pdx-btn--md" onclick="submitTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       DETAIL DRAWER
+  ════════════════════════════════════ -->
+  <div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+    <div class="detail-drawer" id="detailDrawer">
+      <div class="detail-drawer__header">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span id="detailCategory" class="pdx-chip pdx-chip--primary pdx-chip--sm">UI Design</span>
+            <span id="detailStatus" class="status-badge status-badge--new">New</span>
+          </div>
+          <h2 class="detail-title" id="detailTitle">Redesign checkout flow for mobile web</h2>
+        </div>
+        <button class="detail-drawer__close pdx-btn pdx-btn--ghost" onclick="closeDetail()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+        </button>
+      </div>
+      <div class="detail-drawer__body">
+        <div class="detail-meta-grid">
+          <div class="detail-meta-item">
+            <div class="detail-meta-item__label">Requested by</div>
+            <div class="detail-meta-item__value" id="detailRequester"></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-item__label">Team Destination</div>
+            <div class="detail-meta-item__value" id="detailTeam"></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-item__label">Deadline</div>
+            <div class="detail-meta-item__value" id="detailDeadline"></div>
+          </div>
+          <div class="detail-meta-item">
+            <div class="detail-meta-item__label">Submitted</div>
+            <div class="detail-meta-item__value" id="detailSubmitted"></div>
+          </div>
+        </div>
+        <hr class="detail-divider" style="margin-top:0;" />
+        <p class="detail-section-title">Description</p>
+        <div class="detail-description" id="detailDesc"></div>
+
+        <!-- Attachments in drawer -->
+        <div id="detailAttachSection" style="display:none;">
+          <hr class="detail-divider" />
+          <p class="detail-section-title">Attachments</p>
+          <div class="attach-list" id="detailAttachList"></div>
+        </div>
+
+        <hr class="detail-divider" />
+        <p class="detail-section-title">Activity</p>
+        <div class="comment-list" id="detailComments"></div>
+        <div class="comment-input-row">
+          <span class="pdx-avatar pdx-avatar--sm pdx-avatar--circle"><span class="pdx-avatar__initials" style="background:var(--pdx-primary);font-size:9px;">OM</span></span>
+          <textarea placeholder="Add a comment..."></textarea>
+          <button class="pdx-btn pdx-btn--primary pdx-btn--sm">Send</button>
+        </div>
+      </div>
+      <div class="detail-drawer__footer">
+        <button class="pdx-btn pdx-btn--secondary pdx-btn--md" onclick="closeDetail()">Close</button>
+        <button class="pdx-btn pdx-btn--ghost pdx-btn--md" style="color:var(--pdx-warning);">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 4v3.5l2 1.5"/></svg>
+          In Progress
+        </button>
+        <button class="pdx-btn pdx-btn--success pdx-btn--md" style="margin-left:auto;">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M4 6.5l2 2 3.5-3.5"/></svg>
+          Mark Complete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /appWrapper -->
+
+  <!-- TOAST STACK -->
+  <div id="toastStack"></div>
+
+  <script>
+    /* ══════════════════════════════════════════
+       LOGIN
+    ══════════════════════════════════════════ */
+    function handleLogin() {
+      const btn = document.getElementById('msBtn');
+      btn.classList.add('is-loading');
+      btn.innerHTML = `<div class="spinner"></div><span>Signing in...</span>`;
+      setTimeout(() => {
+        const overlay = document.getElementById('loginOverlay');
+        overlay.classList.add('is-hiding');
+        document.getElementById('appWrapper').classList.remove('is-blurred');
+        setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        showToast('success', 'Welcome back, Odi! 👋', 'You\'re now signed in to CX Task Hub.');
+      }, 1800);
+    }
+
+    /* ══════════════════════════════════════════
+       DATA STORE
+    ══════════════════════════════════════════ */
+    const CATEGORY_MAP = {
+      'UI Design':     { chip:'primary', color:'blue',   bg:'#7C3AED' },
+      'Visual Design': { chip:'info',    color:'teal',   bg:'#0284C7' },
+      'UX Research':   { chip:'purple',  color:'purple', bg:'#059669' },
+      'Copywriting':   { chip:'warning', color:'yellow', bg:'#D97706' },
+      'Documentation': { chip:'default', color:'grey',   bg:'#DC2626' },
+      'Design System': { chip:'success', color:'green',  bg:'#2563EB' },
+    };
+
+    let requestsDB = [
+      { id:'r1', title:'Redesign checkout flow for mobile web', category:'UI Design', team:'UI/UX Team', deadline:'Jun 10', deadlineFull:'Jun 10, 2026', submitted:'Jun 2, 2026', desc:'Revamp the existing 3-step checkout into a single-page experience with inline validation and improved CTA hierarchy. The current flow has high drop-off at step 2 (payment details). We need to reduce cognitive load and increase conversion rate on mobile web.', requesterName:'Ari R.', requesterFull:'Ari Rahmadian', requesterInitials:'AR', requesterBg:'#7C3AED', status:'new', comments:[{author:'Ari Rahmadian',bg:'#7C3AED',init:'AR',text:'Attaching Figma link for current checkout flow reference.',time:'Jun 2, 2026 · 09:14'},{author:'Odi Mpailang',bg:'var(--pdx-primary)',init:'OM',text:'Got it! Will review and kick off exploration by end of this week.',time:'Jun 3, 2026 · 11:30'}] },
+      { id:'r2', title:'User interview sessions for onboarding V2', category:'UX Research', team:'Research Team', deadline:'Jun 14', deadlineFull:'Jun 14, 2026', submitted:'May 30, 2026', desc:'Conduct 8 moderated user interviews to identify friction points in the current onboarding flow. Focus on first-session experience, feature discoverability, and drop-off moments. Deliverable: synthesis report with top 5 insights and recommendations.', requesterName:'Dita S.', requesterFull:'Dita Santika', requesterInitials:'DS', requesterBg:'#059669', status:'inprogress', comments:[{author:'Dita Santika',bg:'#059669',init:'DS',text:'Screener sent to 20 candidates. Expecting confirmations by June 5.',time:'May 31, 2026 · 14:00'}] },
+      { id:'r3', title:'Rewrite error messages for payment module', category:'Copywriting', team:'CX Writing', deadline:'Jun 20', deadlineFull:'Jun 20, 2026', submitted:'Jun 1, 2026', desc:'Replace all 23 generic error strings in the payment flow with clear, actionable, and human-friendly copy. Errors to cover: card declined, insufficient balance, expired card, wrong CVV, and network timeout. Tone: calm, helpful, and non-technical.', requesterName:'Rina N.', requesterFull:'Rina Novita', requesterInitials:'RN', requesterBg:'#D97706', status:'new', comments:[] },
+      { id:'r4', title:'Dark mode tokens for Paradise library', category:'Design System', team:'Design System', deadline:'Jun 12', deadlineFull:'Jun 12, 2026', submitted:'May 28, 2026', desc:'Define and document a complete dark mode token set (background, surface, text, border, semantic colors) compatible with all existing Paradise components. Must maintain WCAG AA contrast ratios. Output: updated paradise.css + Figma variable set.', requesterName:'Bayu W.', requesterFull:'Bayu Wibowo', requesterInitials:'BW', requesterBg:'#2563EB', status:'new', comments:[] },
+      { id:'r5', title:'Button variants usage guide', category:'Documentation', team:'Design Ops', deadline:'Jun 18', deadlineFull:'Jun 18, 2026', submitted:'Jun 3, 2026', desc:"Create a comprehensive usage guide for all Button component variants in Paradise: Primary, Secondary, Ghost, and Link. Document each variant's appropriate use case, sizing, states (default, hover, active, disabled), and accessibility requirements.", requesterName:'Fajar H.', requesterFull:'Fajar Hidayat', requesterInitials:'FH', requesterBg:'#DC2626', status:'inprogress', comments:[] },
+      { id:'r6', title:'Email templates for CX notification system', category:'Visual Design', team:'UI/UX Team', deadline:'Jun 25', deadlineFull:'Jun 25, 2026', submitted:'Jun 2, 2026', desc:"Design a visual system for Paragon's transactional emails. Covers 3 template types: Welcome (new user), Reminder (upcoming deadline/event), and Status Update (request status changed). Must use Paradise tokens for color and typography.", requesterName:'Maya L.', requesterFull:'Maya Lestari', requesterInitials:'ML', requesterBg:'#0284C7', status:'new', comments:[] },
+    ];
+
+    let tasksDB = {
+      urgent: [
+        { id:'t1', title:'Review: Redesign checkout flow for mobile web', category:'UI Design', fromName:'Ari R.', fromInitials:'AR', fromBg:'#7C3AED', date:'Jun 10', attachments:[] },
+        { id:'t2', title:'Approve: Dark mode tokens for Paradise library', category:'Design System', fromName:'Bayu W.', fromInitials:'BW', fromBg:'#2563EB', date:'Jun 12', attachments:[] },
+      ],
+      inprogress: [
+        { id:'t3', title:'User interview sessions for onboarding V2', category:'UX Research', fromName:'Dita S.', fromInitials:'DS', fromBg:'#059669', date:'Jun 14', attachments:[] },
+        { id:'t4', title:'Email templates for CX notification system', category:'Visual Design', fromName:'Maya L.', fromInitials:'ML', fromBg:'#0284C7', date:'Jun 25', attachments:[] },
+        { id:'t5', title:'Button variants usage guide documentation', category:'Documentation', fromName:'Fajar H.', fromInitials:'FH', fromBg:'#DC2626', date:'Jun 18', attachments:[] },
+      ],
+      done: [
+        { id:'t6', title:'Input field accessibility audit', category:'Design System', fromName:'Completed', fromInitials:'✓', fromBg:'#059669', date:'Jun 4', done:true, attachments:[] },
+        { id:'t7', title:'Copywriting review for onboarding screens', category:'Copywriting', fromName:'Completed', fromInitials:'✓', fromBg:'#059669', date:'Jun 3', done:true, attachments:[] },
+      ]
+    };
+
+    /* ══════════════════════════════════════════
+       RENDERING — REQUESTS
+    ══════════════════════════════════════════ */
+    let activeTab = 'all';
+
+    function cardHTML(r, isNew) {
+      const cat = CATEGORY_MAP[r.category] || { chip:'default', color:'grey', bg:'#64748B' };
+      const initials = r.requesterInitials || r.requesterName.substring(0,2).toUpperCase();
+      return `
+        <div class="req-card req-card--${cat.color}${isNew ? ' req-card--new' : ''}" onclick="openDetail('${r.id}')">
+          <div class="req-card__top">
+            <span class="pdx-chip pdx-chip--${cat.chip} pdx-chip--sm">${r.category}</span>
+          </div>
+          <div class="req-card__title">${r.title}</div>
+          <div class="req-card__desc">${r.desc}</div>
+          <div class="req-card__footer">
+            <div class="req-card__meta">
+              <div class="req-card__requester">
+                <span class="pdx-avatar pdx-avatar--xs pdx-avatar--circle"><span class="pdx-avatar__initials" style="background:${r.requesterBg};font-size:7px;">${initials}</span></span>
+                ${r.requesterName}
+              </div>
+              <div class="req-card__date">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="1" y="1" width="7" height="7" rx="1"/><path d="M3 0v2M6 0v2M1 3.5h7"/></svg>
+                ${r.deadline}
+              </div>
+            </div>
+            <button class="pdx-btn pdx-btn--link pdx-btn--sm" onclick="event.stopPropagation();openDetail('${r.id}')">View Detail →</button>
+          </div>
+        </div>`;
+    }
+
+    function renderRequests(newId) {
+      const list = activeTab === 'all' ? requestsDB : requestsDB.filter(r => r.status === activeTab);
+      document.getElementById('reqGrid').innerHTML = list.length
+        ? list.map(r => cardHTML(r, r.id === newId)).join('')
+        : `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--pdx-grey-400);font-size:var(--pdx-font-sm);">No requests in this category yet.</div>`;
+      updateCounters();
+    }
+
+    function updateCounters() {
+      const total    = requestsDB.length;
+      const inprog   = requestsDB.filter(r => r.status === 'inprogress').length;
+      const done     = requestsDB.filter(r => r.status === 'done').length;
+      const newReqs  = requestsDB.filter(r => r.status === 'new').length;
+
+      document.getElementById('kpiTotal').textContent    = total + ' Total';
+      document.getElementById('kpiInprog').textContent   = inprog + ' In Progress';
+      document.getElementById('kpiDone').textContent     = done + ' Done';
+      document.getElementById('kpiNew').textContent      = newReqs + ' New';
+      document.getElementById('kpiCardTotal').textContent = total;
+      document.getElementById('kpiCardInprog').textContent = inprog;
+      document.getElementById('kpiCardDone').textContent  = done;
+      document.getElementById('kpiCardNew').textContent   = newReqs;
+      document.getElementById('tabAll').textContent    = total;
+      document.getElementById('tabNew').textContent    = newReqs;
+      document.getElementById('tabInprog').textContent = inprog;
+      document.getElementById('tabDone').textContent   = done;
+
+      const shown = activeTab === 'all' ? total : requestsDB.filter(r => r.status === activeTab).length;
+      document.getElementById('pageInfo').textContent = `Showing ${shown} of ${total} requests`;
+    }
+
+    function switchTab(btn, tab) {
+      activeTab = tab;
+      document.querySelectorAll('#reqTabs .pdx-tab').forEach(t => {
+        t.classList.remove('pdx-tab--active');
+        t.setAttribute('aria-selected','false');
+      });
+      btn.classList.add('pdx-tab--active');
+      btn.setAttribute('aria-selected','true');
+      const labels = { all:'All Requests', new:'New Requests', inprogress:'In Progress', done:'Completed' };
+      document.getElementById('reqSectionTitle').textContent = labels[tab] || 'Requests';
+      renderRequests(null);
+    }
+
+    /* ══════════════════════════════════════════
+       RENDERING — TASKS
+    ══════════════════════════════════════════ */
+    const TASK_COLOR_MAP = {
+      'UI Design':'blue', 'Visual Design':'blue', 'UX Research':'purple',
+      'Copywriting':'yellow', 'Documentation':'grey', 'Design System':'green',
+    };
+    const CHIP_MAP = {
+      'UI Design':'primary','Visual Design':'info','UX Research':'purple',
+      'Copywriting':'warning','Documentation':'default','Design System':'success',
+    };
+
+    function taskHTML(t, isNew) {
+      const color = TASK_COLOR_MAP[t.category] || 'grey';
+      const chip  = CHIP_MAP[t.category] || 'default';
+      const attachBadge = t.attachments && t.attachments.length > 0
+        ? `<div class="task-item__attach">
+             <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7.5 4L4 7.5A2 2 0 0 1 1.5 5L5 1.5A1.33 1.33 0 0 1 7 3.33L3.5 6.83a.67.67 0 0 1-.94-.94L6 2.5"/></svg>
+             ${t.attachments.length} file${t.attachments.length > 1 ? 's' : ''}
+           </div>`
+        : '';
+      if (t.done) {
+        return `
+          <div class="task-item task-item--grey${isNew ? ' task-item--new' : ''}" style="opacity:0.65;">
+            <div class="task-item__title" style="text-decoration:line-through;color:var(--pdx-grey-400);">${t.title}</div>
+            <div style="padding-left:5px;"><span class="pdx-chip pdx-chip--${chip} pdx-chip--sm">${t.category}</span></div>
+            <div class="task-item__row">
+              <div class="task-item__from" style="color:var(--pdx-success);">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--pdx-success)" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="5" r="4"/><path d="M3 5l1.5 1.5 2.5-3"/></svg>
+                Completed
+              </div>
+              <span style="font-size:var(--pdx-font-xs);color:var(--pdx-grey-400);">${t.date}</span>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="task-item task-item--${color}${isNew ? ' task-item--new' : ''}">
+          <div class="task-item__title">${t.title}</div>
+          <div style="padding-left:5px;"><span class="pdx-chip pdx-chip--${chip} pdx-chip--sm">${t.category}</span></div>
+          ${attachBadge}
+          <div class="task-item__row">
+            <div class="task-item__from">
+              <span class="pdx-avatar pdx-avatar--xs pdx-avatar--circle"><span class="pdx-avatar__initials" style="background:${t.fromBg};font-size:7px;">${t.fromInitials}</span></span>
+              From ${t.fromName}
+            </div>
+            <div class="task-item__date">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.5" y="0.5" width="7" height="7" rx="1"/><path d="M2.5 0v1.5M5.5 0v1.5M0.5 3h7"/></svg>
+              ${t.date}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderTasks(newId) {
+      document.getElementById('taskListUrgent').innerHTML = tasksDB.urgent.map(t => taskHTML(t, t.id === newId)).join('');
+      document.getElementById('taskListInprog').innerHTML = tasksDB.inprogress.map(t => taskHTML(t, t.id === newId)).join('');
+      document.getElementById('taskListDone').innerHTML   = tasksDB.done.map(t => taskHTML(t, t.id === newId)).join('');
+      document.getElementById('labelUrgent').textContent = `Needs Action · ${tasksDB.urgent.length}`;
+      document.getElementById('labelInprog').textContent  = `In Progress · ${tasksDB.inprogress.length}`;
+      document.getElementById('labelDone').textContent    = `Done Recently · ${tasksDB.done.length}`;
+      document.getElementById('urgentBadge').textContent  = `${tasksDB.urgent.length} urgent`;
+    }
+
+    /* ══════════════════════════════════════════
+       PANEL COLLAPSE/EXPAND
+    ══════════════════════════════════════════ */
+    let taskExpanded = false;
+
+    function toggleTask() { taskExpanded ? contractTask() : expandTask(); }
+    function expandTask() {
+      taskExpanded = true;
+      document.getElementById('panelTask').classList.add('is-expanded');
+      document.getElementById('panelTask').classList.remove('is-collapsed');
+      document.getElementById('panelMain').classList.add('is-collapsed');
+      document.getElementById('taskToggleIcon').innerHTML = '<path d="M7.5 2l-4 4 4 4"/>';
+      document.getElementById('taskToggleBtn').title = 'Collapse My Task';
+    }
+    function contractTask() {
+      taskExpanded = false;
+      document.getElementById('panelTask').classList.remove('is-expanded','is-collapsed');
+      document.getElementById('panelMain').classList.remove('is-collapsed');
+      document.getElementById('taskToggleIcon').innerHTML = '<path d="M4.5 2l4 4-4 4"/>';
+      document.getElementById('taskToggleBtn').title = 'Expand My Task';
+    }
+    function collapseMain() { expandTask(); }
+    function expandMain()   { contractTask(); }
+
+    /* ══════════════════════════════════════════
+       NEW REQUEST
+    ══════════════════════════════════════════ */
+    function openNewRequest() {
+      document.getElementById('newReqModal').classList.add('pdx-modal-overlay--open');
+    }
+    function closeNewRequest() {
+      document.getElementById('newReqModal').classList.remove('pdx-modal-overlay--open');
+      ['reqTitle','reqDesc'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('reqCategory').selectedIndex = 0;
+      document.getElementById('reqTeam').selectedIndex = 0;
+      document.getElementById('reqDeadline').value = '';
+    }
+    function submitRequest() {
+      const title    = document.getElementById('reqTitle').value.trim();
+      const category = document.getElementById('reqCategory').value;
+      if (!title) { showToast('danger','Missing title','Please enter a request title.'); return; }
+      if (!category) { showToast('danger','Missing category','Please select a category.'); return; }
+      const team = document.getElementById('reqTeam').value || 'UI/UX Team';
+      const rawDate = document.getElementById('reqDeadline').value;
+      const desc  = document.getElementById('reqDesc').value.trim() || 'No description provided.';
+      const cat   = CATEGORY_MAP[category] || {};
+      let deadlineDisplay = 'TBD', deadlineFull = 'TBD';
+      if (rawDate) {
+        const d = new Date(rawDate + 'T00:00:00');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        deadlineDisplay = months[d.getMonth()] + ' ' + d.getDate();
+        deadlineFull    = months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+      }
+      const now = new Date();
+      const months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const today = months2[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+      const newId = 'r' + Date.now();
+      requestsDB.unshift({ id:newId, title, category, team, deadline:deadlineDisplay, deadlineFull, submitted:today, desc, requesterName:'Odi M.', requesterFull:'Odi Mpailang', requesterInitials:'OM', requesterBg:'var(--pdx-primary)', status:'new', comments:[] });
+      activeTab = 'all';
+      document.querySelectorAll('#reqTabs .pdx-tab').forEach(t => { t.classList.remove('pdx-tab--active'); t.setAttribute('aria-selected','false'); });
+      document.querySelector('#reqTabs .pdx-tab[data-tab="all"]').classList.add('pdx-tab--active');
+      renderRequests(newId);
+      closeNewRequest();
+      showToast('success', 'Request submitted!', `"${title}" has been added to Main Board.`);
+    }
+
+    /* ══════════════════════════════════════════
+       ADD TASK — ATTACHMENT HANDLING
+    ══════════════════════════════════════════ */
+    let pendingAttachments = [];
+
+    function handleDragOver(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('attachZone').classList.add('drag-over');
+    }
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('attachZone').classList.remove('drag-over');
+    }
+    function handleDrop(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('attachZone').classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      addFiles(files);
+    }
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files);
+      addFiles(files);
+      e.target.value = ''; // reset so same file can be re-added after remove
+    }
+
+    function getFileCategory(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      if (['pdf'].includes(ext)) return 'pdf';
+      if (['png','jpg','jpeg','gif','svg','webp'].includes(ext)) return 'img';
+      if (['doc','docx','txt','md'].includes(ext)) return 'doc';
+      if (['xls','xlsx','csv'].includes(ext)) return 'xls';
+      if (['fig','sketch'].includes(ext)) return 'fig';
+      return 'other';
+    }
+
+    function getFileLabel(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      const labels = { pdf:'PDF', png:'PNG', jpg:'JPG', jpeg:'JPG', gif:'GIF', svg:'SVG', webp:'WEBP', doc:'DOC', docx:'DOC', txt:'TXT', md:'MD', xls:'XLS', xlsx:'XLS', csv:'CSV', fig:'FIG', sketch:'SKT' };
+      return labels[ext] || ext.toUpperCase().substring(0,3);
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+      return (bytes/(1024*1024)).toFixed(1) + ' MB';
+    }
+
+    function addFiles(files) {
+      files.forEach(file => {
+        if (pendingAttachments.find(f => f.name === file.name && f.size === file.size)) return;
+        pendingAttachments.push({ id:'f' + Date.now() + Math.random(), name:file.name, size:file.size, type:getFileCategory(file.name), label:getFileLabel(file.name) });
+      });
+      renderAttachList();
+    }
+
+    function removeAttachment(id) {
+      pendingAttachments = pendingAttachments.filter(f => f.id !== id);
+      renderAttachList();
+    }
+
+    function renderAttachList() {
+      const list = document.getElementById('attachList');
+      const countEl = document.getElementById('attachCount');
+      if (!pendingAttachments.length) {
+        list.innerHTML = '';
+        countEl.textContent = '';
+        return;
+      }
+      list.innerHTML = pendingAttachments.map(f => `
+        <div class="attach-file" id="af_${f.id}">
+          <div class="attach-file__icon attach-file__icon--${f.type}">${f.label}</div>
+          <div class="attach-file__info">
+            <div class="attach-file__name" title="${f.name}">${f.name}</div>
+            <div class="attach-file__size">${formatSize(f.size)}</div>
+          </div>
+          <button class="attach-file__remove pdx-btn" onclick="removeAttachment('${f.id}')" title="Remove file">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>
+          </button>
+        </div>`).join('');
+      countEl.textContent = `${pendingAttachments.length} file${pendingAttachments.length > 1 ? 's' : ''} attached`;
+    }
+
+    /* ══════════════════════════════════════════
+       ADD TASK MODAL
+    ══════════════════════════════════════════ */
+    function openNewTask() {
+      pendingAttachments = [];
+      renderAttachList();
+      document.getElementById('newTaskModal').classList.add('pdx-modal-overlay--open');
+      document.getElementById('taskTitle').focus();
+    }
+    function closeNewTask() {
+      document.getElementById('newTaskModal').classList.remove('pdx-modal-overlay--open');
+      ['taskTitle','taskNotes','taskFrom'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('taskCategory').selectedIndex = 0;
+      document.getElementById('taskDeadline').value = '';
+      pendingAttachments = [];
+      renderAttachList();
+    }
+    function submitTask() {
+      const title    = document.getElementById('taskTitle').value.trim();
+      const category = document.getElementById('taskCategory').value;
+      if (!title)    { showToast('danger','Missing title','Please enter a task title.'); return; }
+      if (!category) { showToast('danger','Missing category','Please select a category.'); return; }
+      const fromRaw  = document.getElementById('taskFrom').value.trim() || 'Self';
+      const rawDate  = document.getElementById('taskDeadline').value;
+      let dateDisplay = 'TBD';
+      if (rawDate) {
+        const d = new Date(rawDate + 'T00:00:00');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        dateDisplay = months[d.getMonth()] + ' ' + d.getDate();
+      }
+      const initials = fromRaw.split(' ').map(w=>w[0]).join('').toUpperCase().substring(0,2);
+      const bgs = ['#7C3AED','#2563EB','#059669','#D97706','#0284C7','#DC2626'];
+      const bg  = bgs[Math.floor(Math.random() * bgs.length)];
+      const newId = 't' + Date.now();
+      const newTask = { id:newId, title, category, fromName:fromRaw, fromInitials:initials, fromBg:bg, date:dateDisplay, attachments:[...pendingAttachments], done:false };
+      tasksDB.urgent.unshift(newTask);
+      renderTasks(newId);
+      closeNewTask();
+      const attachMsg = newTask.attachments.length ? ` · ${newTask.attachments.length} file${newTask.attachments.length>1?'s':''} attached` : '';
+      showToast('success', 'Task added!', `"${title}" is now in Needs Action.${attachMsg}`);
+    }
+
+    /* ══════════════════════════════════════════
+       DETAIL DRAWER
+    ══════════════════════════════════════════ */
+    function openDetail(id) {
+      const r = requestsDB.find(x => x.id === id);
+      if (!r) return;
+      const cat = CATEGORY_MAP[r.category] || { chip:'default' };
+      document.getElementById('detailTitle').textContent      = r.title;
+      document.getElementById('detailCategory').className     = `pdx-chip pdx-chip--${cat.chip} pdx-chip--sm`;
+      document.getElementById('detailCategory').textContent   = r.category;
+      document.getElementById('detailStatus').className       = `status-badge status-badge--${r.status === 'new' ? 'new' : r.status === 'inprogress' ? 'inprogress' : 'review'}`;
+      document.getElementById('detailStatus').textContent     = r.status === 'new' ? 'New' : r.status === 'inprogress' ? 'In Progress' : 'Under Review';
+      document.getElementById('detailRequester').innerHTML    = `<span class="pdx-avatar pdx-avatar--sm pdx-avatar--circle"><span class="pdx-avatar__initials" style="background:${r.requesterBg};font-size:9px;">${r.requesterInitials}</span></span> ${r.requesterFull}`;
+      document.getElementById('detailTeam').textContent       = r.team;
+      document.getElementById('detailDeadline').innerHTML     = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="1" y="1.5" width="10" height="9.5" rx="1.5"/><path d="M8 0.5v2M4 0.5v2M1 5h10"/></svg> ${r.deadlineFull}`;
+      document.getElementById('detailSubmitted').textContent  = r.submitted;
+      document.getElementById('detailDesc').textContent       = r.desc;
+      document.getElementById('detailComments').innerHTML     = r.comments.length
+        ? r.comments.map(c => `<div class="comment-item"><span class="pdx-avatar pdx-avatar--sm pdx-avatar--circle"><span class="pdx-avatar__initials" style="background:${c.bg};font-size:9px;">${c.init}</span></span><div class="comment-body"><div class="comment-author">${c.author}</div><div class="comment-text">${c.text}</div><div class="comment-time">${c.time}</div></div></div>`).join('')
+        : `<p style="font-size:var(--pdx-font-xs);color:var(--pdx-grey-400);">No comments yet.</p>`;
+      document.getElementById('detailOverlay').classList.add('detail-overlay--open');
+    }
+    function closeDetail() {
+      document.getElementById('detailOverlay').classList.remove('detail-overlay--open');
+    }
+
+    /* ══════════════════════════════════════════
+       TOAST STACK
+    ══════════════════════════════════════════ */
+    function showToast(type, title, msg) {
+      const icons = {
+        success: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--pdx-success)" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 8l2 2 3-3.5"/></svg>`,
+        danger:  `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--pdx-danger)" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 11v.5"/></svg>`,
+        info:    `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--pdx-info)" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v5M8 5v.5"/></svg>`,
+      };
+      const id = 'toast_' + Date.now();
+      const el = document.createElement('div');
+      el.className = `pdx-toast pdx-toast--${type}`;
+      el.id = id;
+      el.innerHTML = `${icons[type] || icons.info}<div class="pdx-toast__body"><strong class="pdx-toast__title">${title}</strong><p class="pdx-toast__msg">${msg}</p></div><button class="pdx-toast__close" onclick="this.parentElement.remove()">×</button>`;
+      document.getElementById('toastStack').prepend(el);
+      setTimeout(() => { const t = document.getElementById(id); if (t) t.remove(); }, 4500);
+    }
+
+    /* ══════════════════════════════════════════
+       USER MENU
+    ══════════════════════════════════════════ */
+    function toggleUserMenu() {
+      const m = document.getElementById('userMenu');
+      m.style.display = m.style.display === 'none' ? 'block' : 'none';
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.header-user')) {
+        const m = document.getElementById('userMenu');
+        if (m) m.style.display = 'none';
+      }
+    });
+
+    /* ══════════════════════════════════════════
+       INIT
+    ══════════════════════════════════════════ */
+    renderRequests(null);
+    renderTasks(null);
+  </script>
+</body>
+</html>
